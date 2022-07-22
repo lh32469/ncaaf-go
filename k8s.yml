@@ -51,7 +51,7 @@ spec:
         - ${project}.lth.guru
       secretName: tls-secret
   rules:
-    - host: ${project}.lth.guru
+    - host: ${host}.lth.guru
       http:
         paths:
           - pathType: Prefix
