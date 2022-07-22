@@ -22,6 +22,10 @@ spec:
         - name: ${project}
           image: localhost:32000/${project}:${branch}
           imagePullPolicy: "Always"
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
 
 ---
 
