@@ -118,10 +118,10 @@ pipeline {
               sh "kubectl -n ${namespace} rollout restart deployment/${project}"
             } else {
               sh "kubectl create namespace $namespace"
-
-              writeFile file: 'k8s-out.yml', text: k8sYml
-              sh "kubectl -n ${namespace} create -f k8s-out.yml"
             }
+
+            writeFile file: 'k8s-out.yml', text: k8sYml
+            sh "kubectl -n ${namespace} apply -f k8s-out.yml"
 
           }
         }
