@@ -101,6 +101,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer session.Close()
+	defer store.Close()
 
 	q := session.QueryCollection("Polls")
 	q = q.WhereEquals("year", year)
