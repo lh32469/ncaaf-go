@@ -48,7 +48,7 @@ metadata:
 spec:
   tls:
     - hosts:
-        - ${project}.lth.guru
+        - ${host}.lth.guru
       secretName: tls-secret
   rules:
     - host: ${host}.lth.guru
