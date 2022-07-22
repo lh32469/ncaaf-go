@@ -47,6 +47,7 @@ pipeline {
             println "Image = " + image
 
             def k8sFile = readFile "k8s.yml"
+            println "Read file k8s.yml"
 
             if (branch == "master") {
               host = project
@@ -56,6 +57,7 @@ pipeline {
               host = "${branch}.${project}"
             }
 
+            println "Host = " + host
             def binding = [
                 project: project,
                 branch : branch,
@@ -66,29 +68,7 @@ pipeline {
             def engine = new groovy.text.SimpleTemplateEngine()
             def template = engine.createTemplate(k8sFile).make(binding)
             k8sYml = template.toString()
-          }
-
-          script {
-            // Need separate script because of SimpleTemplateEngine
-            // NotSerializableException
-            def secretsFile = readFile "secrets.yml"
-
-            withCredentials(
-                [string(credentialsId: 'jasypt-permits', variable: 'JASYPT'),
-                 string(credentialsId: 'aws-id', variable: 'AWS_ID'),
-                 string(credentialsId: 'aws-access', variable: 'AWS_ACCESS')
-                ]) {
-
-              def binding = [
-                  jasypt               : JASYPT,
-                  aws_access_key_id    : AWS_ID,
-                  aws_secret_access_key: AWS_ACCESS
-              ]
-
-              def engine = new groovy.text.SimpleTemplateEngine()
-              def template = engine.createTemplate(secretsFile).make(binding)
-              secretsYml = template.toString()
-            }
+            println "k8sYml template created"
           }
 
         }
