@@ -40,6 +40,7 @@ pipeline {
                 .split("/")[1]
                 .replaceAll(".git", "")
             branch = env.BRANCH_NAME.toLowerCase()
+            println "Origin = " + origin
             println "Project/Branch = " + project + "/" + branch
             image = "${registry}/${project}-${branch}:$BUILD_NUMBER"
             println "Image = " + image
