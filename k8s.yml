@@ -63,3 +63,17 @@ spec:
                   number: 10000
 
 
+---
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ${project}
+spec:
+  maxReplicas: 3
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${project}
+  targetCPUUtilizationPercentage: 10
