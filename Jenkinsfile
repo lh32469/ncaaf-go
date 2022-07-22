@@ -37,7 +37,8 @@ pipeline {
             )
             project = origin.trim()
                 .toLowerCase()
-                .split("/")[1]
+                .split("/")
+                .last()
                 .replaceAll(".git", "")
             branch = env.BRANCH_NAME.toLowerCase()
             println "Origin = " + origin
