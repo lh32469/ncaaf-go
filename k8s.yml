@@ -2,25 +2,25 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: ncaaf
-  name: ncaaf
+    app: ${project}
+  name: ${project}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ncaaf
+      app: ${project}
   template:
     metadata:
       labels:
-        app: ncaaf
+        app: ${project}
     spec:
       hostAliases:
         - ip: "192.168.5.220"
           hostnames:
             - "dell-4290.local"
       containers:
-        - name: ncaaf
-          image: localhost:32000/ncaaf:main
+        - name: ${project}
+          image: localhost:32000/${project}:${branch}
           imagePullPolicy: "Always"
 
 ---
@@ -28,10 +28,10 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: ncaaf
+  name: ${project}
 spec:
   selector:
-    app: ncaaf
+    app: ${project}
   ports:
     - name: web
       port: 10000
@@ -40,7 +40,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ncaaf-ingress
+  name: ${project}-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
@@ -48,17 +48,17 @@ metadata:
 spec:
   tls:
     - hosts:
-        - ncaaf.lth.guru
+        - ${project}.lth.guru
       secretName: tls-secret
   rules:
-    - host: ncaaf.lth.guru
+    - host: ${project}.lth.guru
       http:
         paths:
           - pathType: Prefix
             path: /
             backend:
               service:
-                name: ncaaf
+                name: ${project}
                 port:
                   number: 10000
 
