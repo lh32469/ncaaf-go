@@ -159,6 +159,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 			yPosition += 75
 		}
 		season.Weeks = append(season.Weeks, week)
+		poll = nil // Free memory??
 	}
 
 	getPaths(&season)
