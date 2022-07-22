@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ncaaf
+  name: ncaaf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ncaaf
+  template:
+    metadata:
+      labels:
+        app: ncaaf
+    spec:
+      hostAliases:
+        - ip: "192.168.5.220"
+          hostnames:
+            - "dell-4290.local"
+      containers:
+        - name: ncaaf
+          image: localhost:32000/ncaaf:main
+          imagePullPolicy: "Always"
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: ncaaf
+spec:
+  selector:
+    app: ncaaf
+  ports:
+    - name: web
+      port: 10000
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ncaaf-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - ncaaf.lth.guru
+      secretName: tls-secret
+  rules:
+    - host: ncaaf.lth.guru
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ncaaf
+                port:
+                  number: 10000
+
+

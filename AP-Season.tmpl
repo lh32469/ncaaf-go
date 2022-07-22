@@ -1,0 +1,64 @@
+<html>
+
+<head>
+    <title>${title}</title>
+</head>
+
+<body>
+<script type="text/javascript">
+
+    function MakeTransparent2(evt) {
+        evt.target.setAttributeNS(null, "opacity", "0.5");
+    }
+
+    function MakeOpaque2(evt) {
+        evt.target.setAttributeNS(null, "opacity", "1");
+    }
+
+</script>
+
+<svg width="4500" height="2050">
+
+    {{ with .Paths }}
+        {{ range . }}
+            <path d={{ .D }} stroke={{ .Stroke }}  stroke-width={{ .StrokeWidth }} fill="none" />
+        {{ end }}
+    {{ end }}
+
+    {{ with .Weeks }}
+        {{ range . }}
+            {{ if eq .Number 14 }}
+                <text x={{ offset .XPosition -45 }} y="25" fill="black">
+                    Conf Championships
+                </text>
+            {{else if eq .Number 15}}
+                <text x={{ offset .XPosition -15 }} y="25" fill="black">
+                    Bowl Games
+                </text>
+            {{else if eq .Number 16}}
+                <text x={{ offset .XPosition -15 }} y="25" fill="black">
+                    Final Results
+                </text>
+            {{else }}
+                <text x={{ .XPosition }} y="25" fill="black">
+                    Week {{ .Number  }}
+                </text>
+            {{ end }}
+            {{ with .Teams }}
+                {{ range . }}
+                    <image x={{ .Cx }}
+                           y={{ .Cy }}
+                           width="70"
+                           height="70"
+                           xlink:href={{ .Image }}>
+                        <title role="tooltip">{{ .Name }}</title>
+                    </image>
+                {{ end }}
+            {{ end }}
+        {{ end }}
+    {{ end }}
+</svg>
+
+</body>
+
+</html>
