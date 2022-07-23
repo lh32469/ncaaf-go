@@ -116,6 +116,8 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
+	season.Title = "NCAAF AP " + year
+
 	t := template.
 		Must(template.New("AP-Season.tmpl").
 			Funcs(funcMap).

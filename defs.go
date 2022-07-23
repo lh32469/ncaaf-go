@@ -21,6 +21,7 @@ type Week struct {
 }
 
 type Season struct {
+	Title string
 	Year  int
 	Weeks []Week
 	Paths []Path
