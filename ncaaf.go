@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
 	ravendb "github.com/ravendb/ravendb-go-client"
 	"html/template"
@@ -12,6 +10,8 @@ import (
 	"sort"
 	"strconv"
 )
+
+var store, _ = getDocumentStore("NCAAF")
 
 func getDocumentStore(databaseName string) (*ravendb.DocumentStore, error) {
 	serverNodes := []string{"http://dell-4290.local:5050"}
@@ -22,70 +22,9 @@ func getDocumentStore(databaseName string) (*ravendb.DocumentStore, error) {
 	return store, nil
 }
 
-func loadDb(w http.ResponseWriter, r *http.Request) {
-	var store, _ = getDocumentStore("NCAAF")
-	var session, err = store.OpenSession("")
-	if err != nil {
-		panic(err)
-	}
-
-	q := session.QueryCollection("Teams")
-
-	fmt.Println(q)
-
-	var teams []*Team
-	err = q.GetResults(&teams)
-	if err != nil {
-		panic(err)
-	}
-
-	json.NewEncoder(w).Encode(teams)
-}
-
-func loadPoll(w http.ResponseWriter, r *http.Request) {
-	var store, _ = getDocumentStore("NCAAF")
-	var session, err = store.OpenSession("")
-	if err != nil {
-		panic(err)
-	}
-
-	q := session.QueryCollection("Polls")
-	q = q.WhereEquals("year", "2020")
-
-	var polls []*Poll
-	err = q.GetResults(&polls)
-	if err != nil {
-		panic(err)
-	}
-
-	json.NewEncoder(w).Encode(polls)
-}
-
 func (p *Team) GetRecord(teamName string, weekNum int) string {
 	return "This is record for " + teamName + ", Week: " +
 		strconv.Itoa(weekNum)
-}
-
-func (s *Poll) GetTeam(teamName string, weekNum int) string {
-
-	return "This is record for " + teamName + ", Week: " +
-		strconv.Itoa(weekNum)
-	//foo := Team{
-	//	Name:  "Michigan",
-	//	Image: "http://MI",
-	//}
-	//
-	//return foo
-}
-
-func (s *Poll) GetTeam2(teamName string, weekNum int) Team {
-
-	team := Team{
-		Name:  teamName,
-		Image: "http://yahoo.com/" + teamName,
-	}
-
-	return team
 }
 
 func getAPSeason(w http.ResponseWriter, r *http.Request) {
@@ -94,14 +33,12 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	year := vars["year"]
 	log.Print("Year: ", year)
 
-	var store, _ = getDocumentStore("NCAAF")
 	var session, err = store.OpenSession("")
 	if err != nil {
 		panic(err)
 	}
 
 	defer session.Close()
-	defer store.Close()
 
 	q := session.QueryCollection("Polls")
 	q = q.WhereEquals("year", year)
@@ -201,62 +138,11 @@ func getTeam(name string, teams []*Team) (*Team, error) {
 	return nil, err
 }
 
-func getNCAAF(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	year := vars["year"]
-	log.Print("Year: ", year)
-
-	var accept = r.Header.Get("Accept")
-	log.Print("Accept: ", accept)
-
-	var weeks = []Week{
-		{
-			Number: 1,
-			Teams: []Team{
-				{
-					Name:  "Michigan",
-					Image: "http://MI",
-				},
-				{
-					Name:  "Oregon",
-					Image: "http://OR",
-				},
-			}},
-		{
-			Number: 2,
-		},
-	}
-
-	var season = Season{
-		Year:  2013,
-		Weeks: weeks,
-	}
-
-	// Files are provided as a slice of strings.
-	paths := []string{
-		"ap.tmpl.sav",
-	}
-
-	t := template.Must(template.New("ap.tmpl.sav").ParseFiles(paths...))
-	err := t.Execute(w, season)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func routeRequests() {
+func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/teams", loadDb)
-	router.HandleFunc("/poll", loadPoll)
-	router.HandleFunc("/ap", getNCAAF)
 	router.HandleFunc("/ap/{year}", getAPSeason)
 
 	log.Printf("Running...")
 	log.Fatal(http.ListenAndServe(":10000", router))
-}
-
-func main() {
-	routeRequests()
 }
