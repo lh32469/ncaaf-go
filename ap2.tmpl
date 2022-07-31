@@ -1,0 +1,35 @@
+<html>
+
+<head>
+    <title>${title}</title>
+</head>
+
+<body>
+<script type="text/javascript">
+
+    function MakeTransparent2(evt) {
+        evt.target.setAttributeNS(null, "opacity", "0.5");
+    }
+
+    function MakeOpaque2(evt) {
+        evt.target.setAttributeNS(null, "opacity", "1");
+    }
+
+</script>
+
+{{ with .Weeks }}
+    {{ range . }}
+        {{$number := .Number}}
+        <h4>Week {{ .Number }}</h4>
+        {{ with .Teams }}
+            {{ range . }}
+                <h4>{{ .Name }}</h4>
+                {{ .GetRecord .Name $number }}
+            {{ end }}
+        {{ end }}
+    {{ end }}
+{{ end }}
+
+</body>
+
+</html>

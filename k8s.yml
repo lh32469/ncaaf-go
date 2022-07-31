@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ${project}
+  name: ${project}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${project}
+  template:
+    metadata:
+      labels:
+        app: ${project}
+    spec:
+      hostAliases:
+        - ip: "192.168.5.220"
+          hostnames:
+            - "dell-4290.local"
+      containers:
+        - name: ${project}
+          image: localhost:32000/${project}:${branch}
+          imagePullPolicy: "Always"
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${project}
+spec:
+  selector:
+    app: ${project}
+  ports:
+    - name: web
+      port: 10000
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${project}-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - ${host}.lth.guru
+      secretName: tls-secret
+  rules:
+    - host: ${host}.lth.guru
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ${project}
+                port:
+                  number: 10000
+
+
+---
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ${project}
+spec:
+  maxReplicas: 3
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ${project}
+  targetCPUUtilizationPercentage: 10
