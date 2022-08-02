@@ -3,24 +3,15 @@ package main
 import (
 	"errors"
 	"github.com/gorilla/mux"
-	ravendb "github.com/ravendb/ravendb-go-client"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
+	"strings"
 )
-
-var store, _ = getDocumentStore("NCAAF")
-
-func getDocumentStore(databaseName string) (*ravendb.DocumentStore, error) {
-	serverNodes := []string{"http://dell-4290.local:5050"}
-	store := ravendb.NewDocumentStore(serverNodes, databaseName)
-	if err := store.Initialize(); err != nil {
-		return nil, err
-	}
-	return store, nil
-}
 
 func (p *Team) GetRecord(teamName string, weekNum int) string {
 	return "This is record for " + teamName + ", Week: " +
@@ -33,11 +24,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	year := vars["year"]
 	log.Print("Year: ", year)
 
-	var session, err = store.OpenSession("")
-	if err != nil {
-		panic(err)
-	}
-
+	var session = openSession()
 	defer session.Close()
 
 	q := session.QueryCollection("Polls")
@@ -45,7 +32,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	//q = q.OrderBy("week")
 
 	var polls []*Poll
-	err = q.GetResults(&polls)
+	var err = q.GetResults(&polls)
 	if err != nil {
 		panic(err)
 	}
@@ -67,13 +54,15 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 
 	var i, _ = strconv.Atoi(year)
 
+	scoreBoards := getScoreBoards(i)
+
 	var season = Season{
 		Year: i,
 	}
 
 	var xPosition = 0
 
-	for _, poll := range polls {
+	for position, poll := range polls {
 		xPosition += 250
 
 		var week = Week{
@@ -85,6 +74,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 		for _, teamName := range poll.TeamNames {
 
 			team, err := getTeam(teamName, teams)
+			team.Position = position
 
 			if err != nil {
 				log.Println(err)
@@ -100,8 +90,8 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 		poll = nil // Free memory??
 	}
 
-	getPaths(&season)
-	//season.Paths = getPaths(season)
+	addPaths(&season, scoreBoards)
+	//season.Paths = addPaths(season)
 	//json.NewEncoder(w).Encode(season)
 
 	// Files are provided as a slice of strings.
@@ -113,6 +103,18 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 		// The name "offset" is what the function will be called in the template text.
 		"offset": func(i int, offset int) int {
 			return i + offset
+		},
+		"opponent": func(team Team, week int) Team {
+			opp := getOpponent(team, week, scoreBoards)
+			other, err := getTeam(opp.Name, teams)
+			if err != nil {
+				return Team{}
+			}
+			return *other
+		},
+		"getResult": func(team Team, week int) string {
+			game := getGame(team, week, scoreBoards)
+			return game.Result()
 		},
 	}
 
@@ -131,19 +133,39 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 }
 
 func getTeam(name string, teams []*Team) (*Team, error) {
-	for i := range teams {
-		if teams[i].Name == name {
-			return teams[i], nil
+
+	name = strings.TrimSpace(name)
+
+	for _, team := range teams {
+		if team.Name == name {
+			return team, nil
+		}
+		for _, alias := range team.Names {
+			if alias == name {
+				return team, nil
+			}
 		}
 	}
-	var err = errors.New(name + " not found")
+	log.Printf("getTeam: '%s' not found", name)
+	var err = errors.New("'" + name + "' not found")
 	return nil, err
+}
+
+func getImage(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	image := vars["image"]
+	//log.Print("image: ", image)
+	data, _ := fs.ReadFile(os.DirFS("images"), image)
+
+	w.Write(data)
 }
 
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/ap/{year}", getAPSeason)
+	router.HandleFunc("/image/{image}", getImage)
 
 	log.Printf("Running...")
 	log.Fatal(http.ListenAndServe(":10000", router))
