@@ -1,5 +1,9 @@
 package main
 
+import (
+	"encoding/json"
+)
+
 type Poll struct {
 	Poll      string   `json:"poll"`
 	Year      string   `json:"year"`
@@ -8,10 +12,22 @@ type Poll struct {
 }
 
 type Team struct {
-	Name  string
-	Image string
-	Cx    int
-	Cy    int
+	Name     string
+	Names    []string
+	Image    string
+	Position int
+	Cx       int
+	Cy       int
+}
+
+func (t Team) String() string {
+
+	out, err := json.MarshalIndent(t, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	return string(out)
 }
 
 type Week struct {
