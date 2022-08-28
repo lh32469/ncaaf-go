@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func addPaths(season *Season, scoreboards []*ScoreBoard) []Path {
+func addPaths(season *Season, games []*CFBDGame) []Path {
 
 	var paths []Path
 	var previousWeek = Week{
@@ -42,7 +42,7 @@ func addPaths(season *Season, scoreboards []*ScoreBoard) []Path {
 				strconv.Itoa(endX) + " " +
 				strconv.Itoa(endY)
 
-			game := getGame(team, previousWeek.Number, scoreboards)
+			game := getGame2(team, previousWeek.Number, games)
 
 			stroke := "red"
 

@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 )
 
-func getOpponent(team Team, week int, scoreboards []*ScoreBoard) Team {
+func getOpponent(team Team, week int, games []*CFBDGame) Team {
 
 	//log.Printf("getOpponent %s, %d, %d", team.Name, year, week)
 
-	game := getGame(team, week, scoreboards)
+	game := getGame2(team, week, games)
 	//log.Printf("getOpponent: Game = %s", game)
 
 	opponent := Team{}
@@ -44,6 +45,54 @@ func getOpponent(team Team, week int, scoreboards []*ScoreBoard) Team {
 
 	return Team{}
 
+}
+
+func getCFBDGame(team Team, year int, week int) Game {
+	var session = openSession()
+	defer session.Close()
+
+	q := session.QueryCollection("CFBDGames")
+	q = q.WhereEquals("season", year)
+	q = q.WhereEquals("week", week)
+	q = q.WhereEquals("away_team", team.Name)
+	q = q.OrElse()
+	q = q.WhereEquals("season", year)
+	q = q.WhereEquals("week", week)
+	q = q.WhereEquals("home_team", team.Name)
+
+	var games []*CFBDGame
+	var err = q.GetResults(&games)
+	if err != nil {
+		panic(err)
+	}
+
+	game := games[0]
+
+	home := Side{
+		Score: strconv.Itoa(game.HomePoints),
+		Names: map[string]string{
+			"short": game.HomeTeam,
+		},
+	}
+
+	away := Side{
+		Score: strconv.Itoa(game.AwayPoints),
+		Names: map[string]string{
+			"short": game.AwayTeam,
+		},
+	}
+
+	if game.HomePoints > game.AwayPoints {
+		home.Winner = true
+	} else {
+		away.Winner = true
+	}
+
+	return Game{
+		GameID: strconv.Itoa(games[0].ID),
+		Home:   home,
+		Away:   away,
+	}
 }
 
 func getGame(team Team, week int, scoreboards []*ScoreBoard) Game {
@@ -135,4 +184,63 @@ func getScoreBoards(year int) []*ScoreBoard {
 		len(scoreBoards), year)
 
 	return scoreBoards
+}
+
+func getGames(season int) []*CFBDGame {
+
+	session := openSession()
+	defer session.Close()
+	q := session.QueryCollection("CFBDGames")
+	q = q.WhereEquals("season", season)
+
+	var games []*CFBDGame
+	var err = q.GetResults(&games)
+	if err != nil {
+		panic(err)
+	}
+
+	return games
+}
+
+func getGame2(team Team, week int, games []*CFBDGame) Game {
+
+	game := games[100]
+
+	for _, cfbdGame := range games {
+		if cfbdGame.Week == week {
+			if cfbdGame.AwayTeam == team.Name {
+				game = cfbdGame
+				break
+			}
+			if cfbdGame.HomeTeam == team.Name {
+				game = cfbdGame
+				break
+			}
+		}
+	}
+	home := Side{
+		Score: strconv.Itoa(game.HomePoints),
+		Names: map[string]string{
+			"short": game.HomeTeam,
+		},
+	}
+
+	away := Side{
+		Score: strconv.Itoa(game.AwayPoints),
+		Names: map[string]string{
+			"short": game.AwayTeam,
+		},
+	}
+
+	if game.HomePoints > game.AwayPoints {
+		home.Winner = true
+	} else {
+		away.Winner = true
+	}
+
+	return Game{
+		GameID: strconv.Itoa(game.ID),
+		Home:   home,
+		Away:   away,
+	}
 }

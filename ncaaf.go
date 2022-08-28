@@ -41,6 +41,36 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 		return polls[i].Week < polls[j].Week
 	})
 
+	// Load CFDB Poll data
+	q = session.QueryCollection("CFBDWeeks")
+	q = q.WhereEquals("Season", year)
+	//q = q.OrderBy("week")
+
+	var weeks []*CFBDWeek
+	err = q.GetResults(&weeks)
+	if err != nil {
+		panic(err)
+	}
+
+	sort.Slice(weeks, func(i, j int) bool {
+		return weeks[i].Week < weeks[j].Week
+	})
+	//fmt.Println(weeks)
+
+	//var apPolls []CFBDPoll
+	//
+	//for _, week := range weeks {
+	//	for _, poll := range week.Polls {
+	//		if poll.Poll == "AP Top 25" {
+	//			apPolls = append(apPolls, poll)
+	//		}
+	//	}
+	//}
+	//
+	//fmt.Println(apPolls)
+
+	// End Load CFDB Poll data
+
 	// Get Teams
 	q = session.QueryCollection("Teams")
 
@@ -54,7 +84,8 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 
 	var i, _ = strconv.Atoi(year)
 
-	scoreBoards := getScoreBoards(i)
+	//scoreBoards := getScoreBoards(i)
+	games := getGames(i)
 
 	var season = Season{
 		Year: i,
@@ -62,35 +93,50 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 
 	var xPosition = 0
 
-	for position, poll := range polls {
+	var weekPoll CFBDPoll
+
+	for position, cfbdPoll := range weeks {
 		xPosition += 250
 
+		for _, poll := range cfbdPoll.Polls {
+			if poll.Poll == "AP Top 25" {
+				weekPoll = poll
+			}
+		}
+
+		sort.Slice(weekPoll.Ranks, func(i, j int) bool {
+			return weekPoll.Ranks[i].Rank < weekPoll.Ranks[j].Rank
+		})
+
 		var week = Week{
-			Number:    poll.Week,
+			Number:    cfbdPoll.Week,
 			XPosition: xPosition,
 		}
+
 		var yPosition = 50
 
-		for _, teamName := range poll.TeamNames {
+		for _, rank := range weekPoll.Ranks {
 
-			team, err := getTeam(teamName, teams)
-			team.Position = position
+			team, err := getTeam(rank.School, teams)
 
 			if err != nil {
 				log.Println(err)
 			} else {
+				team.Position = position
 				team.Cx = xPosition
 				team.Cy = yPosition
 				week.Teams = append(week.Teams, *team)
 			}
 
 			yPosition += 75
+
 		}
+
 		season.Weeks = append(season.Weeks, week)
-		poll = nil // Free memory??
+		cfbdPoll = nil // Free memory??
 	}
 
-	addPaths(&season, scoreBoards)
+	addPaths(&season, games)
 	//season.Paths = addPaths(season)
 	//json.NewEncoder(w).Encode(season)
 
@@ -105,7 +151,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 			return i + offset
 		},
 		"opponent": func(team Team, week int) Team {
-			opp := getOpponent(team, week, scoreBoards)
+			opp := getOpponent(team, week, games)
 			other, err := getTeam(opp.Name, teams)
 			if err != nil {
 				return Team{}
@@ -113,7 +159,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 			return *other
 		},
 		"getResult": func(team Team, week int) string {
-			game := getGame(team, week, scoreBoards)
+			game := getGame2(team, week, games)
 			return game.Result()
 		},
 	}
@@ -165,6 +211,8 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/ap/{year}", getAPSeason)
+	//router.HandleFunc("/cfbd/{year}/{week}", getCFBD)
+	//router.HandleFunc("/load/{year}/{week}", loadGames)
 	router.HandleFunc("/image/{image}", getImage)
 
 	log.Printf("Running...")
