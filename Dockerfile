@@ -4,7 +4,7 @@ COPY ncaaf /usr/local/bin
 
 WORKDIR /app
 COPY AP-Season.tmpl /app
-COPY images         /app
+COPY images         /app/images
 
 CMD [ "ncaaf" ]
 
