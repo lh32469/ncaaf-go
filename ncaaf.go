@@ -194,7 +194,8 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			return strconv.Itoa(wins) + " - " + strconv.Itoa(losses)
+			return team.Name + "\n" +
+				strconv.Itoa(wins) + " - " + strconv.Itoa(losses)
 		},
 	}
 
