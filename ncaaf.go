@@ -161,6 +161,41 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 			game := getGame(team, week, games)
 			return game.Result()
 		},
+		// Get Ranking of opponent in current Teams list
+		"getRank": func(team Team, Teams []Team) int {
+			for i, entry := range Teams {
+				if entry.Name == team.Name {
+					//log.Println(entry.Name + " " + strconv.Itoa(i))
+					return i
+				}
+			}
+			return 100 // Not Ranked
+		},
+		// Get record of current team based on this season's games
+		"getRecord": func(team Team, week int) string {
+			wins := 0
+			losses := 0
+			for _, game := range games {
+				if game.Week > week-1 {
+					continue
+				}
+				if game.AwayTeam == team.Name {
+					if game.AwayPoints > game.HomePoints {
+						wins++
+					} else {
+						losses++
+					}
+				}
+				if game.HomeTeam == team.Name {
+					if game.HomePoints > game.AwayPoints {
+						wins++
+					} else {
+						losses++
+					}
+				}
+			}
+			return strconv.Itoa(wins) + " - " + strconv.Itoa(losses)
+		},
 	}
 
 	season.Title = "NCAAF AP " + year

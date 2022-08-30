@@ -21,13 +21,14 @@
 
     {{ with .Paths }}
         {{ range . }}
-            <path d={{ .D }} stroke={{ .Stroke }}  stroke-width={{ .StrokeWidth }} fill="none" />
+            <path d={{ .D }} stroke={{ .Stroke }} stroke-width={{ .StrokeWidth }} fill="none"/>
         {{ end }}
     {{ end }}
 
     {{ with .Weeks }}
         {{ range . }}
             {{$number := .Number}}
+            {{$teams := .Teams}}
             {{ if eq .Number 14 }}
                 <text x={{ offset .XPosition -45 }} y="25" fill="black">
                     Conf Championships
@@ -52,15 +53,29 @@
                            width="70"
                            height="70"
                            xlink:href={{ .Image }}>
-                        <title role="tooltip">{{ .Name }} ({{ .Position }})</title>
+                        <title role="tooltip">{{ getRecord . $number}}</title>
                     </image>
+                    {{$opp := (opponent . $number)}}
+                    {{$oppRank := (getRank $opp $teams)}}
                     <image x={{ offset .Cx 100 }}
                            y={{ offset .Cy 20 }}
                            width="40"
                            height="40"
-                           xlink:href={{ (opponent . $number).Image }}>
+                           onclick="alert({{ getResult . $number }})"
+                           xlink:href={{ $opp.Image }}>
                         <title role="tooltip">{{ getResult . $number }}</title>
                     </image>
+                    {{ if le $oppRank 25}}
+                        {{$stroke := "black"}}
+                        {{ if le $oppRank 10}}
+                            {{$stroke = "red"}}
+                        {{ end }}
+                        <circle cx={{ offset .Cx 120 }}
+                                cy={{ offset .Cy 40 }}
+                                r="29"
+                                stroke={{$stroke}}
+                                fill="none"/>
+                    {{ end }}
                 {{ end }}
             {{ end }}
         {{ end }}
