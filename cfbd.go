@@ -1,6 +1,11 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strconv"
+	"strings"
+	"time"
+)
 
 type CFBDWeek struct {
 	Season int
@@ -19,9 +24,12 @@ type CFBDRank struct {
 }
 
 type CFBDGame struct {
-	ID     int `json:"id"`
-	Season int `json:"season"`
-	Week   int `json:"week"`
+	ID         int       `json:"id"`
+	Season     int       `json:"season"`
+	SeasonType string    `json:"season_type"`
+	Week       int       `json:"week"`
+	StartDate  time.Time `json:"start_date"`
+
 	//seasonType     string
 	//startDate      string
 	//startTimeTbd   int
@@ -52,6 +60,44 @@ type CFBDGame struct {
 	//excitementIndex int
 	//highlights      string
 	//notes           string
+}
+
+func (game CFBDGame) Result() string {
+
+	if game.ID != -1 {
+		return game.HomeTeam + " " +
+			strconv.Itoa(game.HomePoints) + "\n" +
+			game.AwayTeam + " " +
+			strconv.Itoa(game.AwayPoints) + "\n" +
+			game.StartDate.Format("01-02-2006")
+	} else {
+		return "Bye Week"
+	}
+}
+
+func (game CFBDGame) Winner() string {
+	if game.HomePoints > game.AwayPoints {
+		return game.HomeTeam
+	} else {
+		return game.AwayTeam
+	}
+}
+
+func (game CFBDGame) IsWinner(team Team) bool {
+
+	winner := game.Winner()
+
+	if team.Name == winner {
+		return true
+	}
+
+	for _, alias := range team.Names {
+		if strings.TrimSpace(winner) == alias {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (t CFBDWeek) String() string {

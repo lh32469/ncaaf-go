@@ -82,20 +82,19 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 
 	//json.NewEncoder(w).Encode(teams)
 
-	var i, _ = strconv.Atoi(year)
+	var y, _ = strconv.Atoi(year)
 
-	//scoreBoards := getScoreBoards(i)
-	games := getGames(i)
+	games := getGames(y)
 
 	var season = Season{
-		Year: i,
+		Year: y,
 	}
 
 	var xPosition = 0
 
 	var weekPoll CFBDPoll
 
-	for position, cfbdPoll := range weeks {
+	for _, cfbdPoll := range weeks {
 		xPosition += 250
 
 		for _, poll := range cfbdPoll.Polls {
@@ -122,7 +121,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Println(err)
 			} else {
-				team.Position = position
+				team.Position = rank.Rank
 				team.Cx = xPosition
 				team.Cy = yPosition
 				week.Teams = append(week.Teams, *team)
@@ -159,7 +158,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 			return *other
 		},
 		"getResult": func(team Team, week int) string {
-			game := getGame2(team, week, games)
+			game := getGame(team, week, games)
 			return game.Result()
 		},
 	}

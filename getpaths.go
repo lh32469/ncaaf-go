@@ -42,25 +42,26 @@ func addPaths(season *Season, games []*CFBDGame) []Path {
 				strconv.Itoa(endX) + " " +
 				strconv.Itoa(endY)
 
-			game := getGame2(team, previousWeek.Number, games)
+			game := getGame(team, previousWeek.Number, games)
 
-			stroke := "red"
+			// Default for bye weeks
+			stroke := "black"
 
-			if game.IsWinner(team) {
-				stroke = "green"
+			if game.ID != -1 {
+				// If not bye week
+				if game.IsWinner(team) {
+					stroke = "green"
+				} else {
+					stroke = "red"
+				}
 			}
 
-			width := "1"
-
-			home, _ := strconv.Atoi(game.Home.Score)
-			away, _ := strconv.Atoi(game.Away.Score)
-			diff := math.Abs(float64(home - away))
-			if diff > 20 {
-				width = "2"
+			diff := math.Abs(float64(game.HomePoints - game.AwayPoints))
+			m := int(math.Ceil(diff / 10))
+			if m == 0 {
+				m = 1
 			}
-			if diff > 30 {
-				width = "3"
-			}
+			width := strconv.Itoa(m)
 
 			paths = append(paths, Path{
 				D:           cpath,

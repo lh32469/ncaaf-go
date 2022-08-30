@@ -95,54 +95,6 @@ func getCFBDGame(team Team, year int, week int) Game {
 	}
 }
 
-func getGame(team Team, week int, scoreboards []*ScoreBoard) Game {
-
-	//log.Printf("getGame %s, %d", team.Name, week)
-
-	ws := fmt.Sprintf("%02d", week)
-	game := Game{}
-
-	for _, scoreboard := range scoreboards {
-		if strings.HasSuffix(scoreboard.ID, ws) {
-			//log.Printf("getGame Found: %s\n", scoreboard.ID)
-			//log.Printf("getGame Found: %s\n", scoreboard.InputMD5Sum)
-
-			for _, wrapper := range scoreboard.Games {
-				game := wrapper.Game
-
-				//log.Printf("Game: %s\n", game.Title)
-				if strings.TrimSpace(game.Away.Names["short"]) == team.Name {
-					//log.Printf("getGame Found: " + team.Name)
-					team.Name = game.Home.Names["short"]
-					return game
-				}
-				if strings.TrimSpace(game.Home.Names["short"]) == team.Name {
-					//log.Printf("getGame Found: " + team.Name)
-					team.Name = game.Away.Names["short"]
-					return game
-				}
-
-				// Check aliases
-				for _, alias := range team.Names {
-					if strings.TrimSpace(game.Away.Names["short"]) == alias {
-						//log.Printf("getGame Found: " + team.Name)
-						team.Name = game.Home.Names["short"]
-						return game
-					}
-					if strings.TrimSpace(game.Home.Names["short"]) == alias {
-						//log.Printf("getGame Found: " + team.Name)
-						team.Name = game.Away.Names["short"]
-						return game
-					}
-				}
-			}
-
-		}
-	}
-
-	return game
-}
-
 func getScoreBoard(year int, week int) *ScoreBoard {
 
 	session := openSession()
@@ -202,9 +154,26 @@ func getGames(season int) []*CFBDGame {
 	return games
 }
 
+func getGame(team Team, week int, games []*CFBDGame) CFBDGame {
+	for _, cfbdGame := range games {
+		if cfbdGame.Week == week {
+			if cfbdGame.AwayTeam == team.Name {
+				return *cfbdGame
+			}
+			if cfbdGame.HomeTeam == team.Name {
+				return *cfbdGame
+			}
+		}
+	}
+
+	return CFBDGame{
+		ID: -1,
+	}
+}
+
 func getGame2(team Team, week int, games []*CFBDGame) Game {
 
-	game := games[100]
+	game := games[0]
 
 	for _, cfbdGame := range games {
 		if cfbdGame.Week == week {
