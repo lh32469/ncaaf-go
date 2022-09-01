@@ -27,49 +27,47 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	var session = openSession()
 	defer session.Close()
 
-	q := session.QueryCollection("Polls")
-	q = q.WhereEquals("year", year)
-	//q = q.OrderBy("week")
+	//q := session.QueryCollection("Polls")
+	//q = q.WhereEquals("year", year)
+	////q = q.OrderBy("week")
 
-	var polls []*Poll
-	var err = q.GetResults(&polls)
-	if err != nil {
-		panic(err)
-	}
+	//var polls []*Poll
+	//var err = q.GetResults(&polls)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	sort.Slice(polls, func(i, j int) bool {
-		return polls[i].Week < polls[j].Week
-	})
-
-	// Load CFDB Poll data
-	q = session.QueryCollection("CFBDWeeks")
-	q = q.WhereEquals("Season", year)
-	//q = q.OrderBy("week")
+	// Load Regular Season Rankings
+	q := session.QueryCollection("CFBDWeeks")
+	q = q.WhereEquals("season", year)
+	q = q.WhereEquals("seasonType", "regular")
 
 	var weeks []*CFBDWeek
-	err = q.GetResults(&weeks)
+	err := q.GetResults(&weeks)
 	if err != nil {
 		panic(err)
 	}
 
+	// Load Post Season (Final) Rankings
+	q = session.QueryCollection("CFBDWeeks")
+	q = q.WhereEquals("season", year)
+	q = q.WhereEquals("seasonType", "postseason")
+
+	var post []*CFBDWeek
+	err = q.GetResults(&post)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, final := range post {
+		final.Week = len(weeks) + 1
+		weeks = append(weeks, final)
+	}
+
+	// Sort the Weeks
 	sort.Slice(weeks, func(i, j int) bool {
 		return weeks[i].Week < weeks[j].Week
 	})
-	//fmt.Println(weeks)
-
-	//var apPolls []CFBDPoll
-	//
-	//for _, week := range weeks {
-	//	for _, poll := range week.Polls {
-	//		if poll.Poll == "AP Top 25" {
-	//			apPolls = append(apPolls, poll)
-	//		}
-	//	}
-	//}
-	//
-	//fmt.Println(apPolls)
-
-	// End Load CFDB Poll data
 
 	// Get Teams
 	q = session.QueryCollection("Teams")
@@ -246,8 +244,8 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/ap/{year}", getAPSeason)
-	//router.HandleFunc("/cfbd/{year}/{week}", getCFBD)
-	//router.HandleFunc("/load/{year}/{week}", loadGames)
+	//router.HandleFunc("/rankings/{year}/{week}/{type}", getRankings)
+	//router.HandleFunc("/load/{year}/{week}/{type}", loadGames)
 	router.HandleFunc("/image/{image}", getImage)
 
 	log.Printf("Running...")

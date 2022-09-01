@@ -68,7 +68,7 @@ func TestGetOpponentNCState(t *testing.T) {
 
 }
 
-func TestGetOpponenOhioState(t *testing.T) {
+func TestGetOpponentOhioState(t *testing.T) {
 
 	log.Printf("Running...")
 	var session = openSession()
@@ -139,9 +139,9 @@ func TestGetGame(t *testing.T) {
 		Name: "Michigan",
 	}
 
-	scoreBoards := getScoreBoards(2017)
+	games := getGames(2017)
 
-	game := getGame(michigan, 2, scoreBoards)
+	game := getGame(michigan, 2, games)
 	fmt.Printf("Game: %s\n", game)
 
 	log.Printf("Winner: %s", game.Winner())
@@ -204,12 +204,40 @@ func TestWinner(t *testing.T) {
 	}
 	log.Printf("NC State: %s\n", ohioState)
 
-	scoreBoards := getScoreBoards(2017)
+	games := getGames(2017)
 
-	game := getGame(*ohioState, 1, scoreBoards)
+	game := getGame(*ohioState, 1, games)
 	log.Printf("game: %s\n", game)
 
 	log.Printf("Winner: %s", game.Winner())
 	log.Printf("Is Winner: %t", game.IsWinner(*ohioState))
+
+}
+
+func TestGetMichiganGame2021(t *testing.T) {
+
+	log.Printf("Running...")
+	var session = openSession()
+	defer session.Close()
+
+	games := getGames(2021)
+
+	michigan := Team{
+		Name: "Michigan",
+	}
+
+	game := getGameBy(michigan, 1, "regular", games)
+
+	if "Western Michigan" != game.AwayTeam {
+		t.Logf("Opponent: %s\n", game)
+		t.Fatalf(`Couldn't find Opponent for %s'`, michigan)
+	}
+
+	game = getGameBy(michigan, 1, "postseason", games)
+
+	if "Georgia" != game.AwayTeam {
+		t.Logf("Opponent: %s\n", game)
+		t.Fatalf(`Couldn't find Opponent for %s'`, michigan)
+	}
 
 }

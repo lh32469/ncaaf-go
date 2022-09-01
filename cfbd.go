@@ -8,9 +8,10 @@ import (
 )
 
 type CFBDWeek struct {
-	Season int
-	Week   int
-	Polls  []CFBDPoll `json:"polls"`
+	Season     int        `json:"season"`
+	SeasonType string     `json:"seasonType"`
+	Week       int        `json:"week"`
+	Polls      []CFBDPoll `json:"polls"`
 }
 type CFBDPoll struct {
 	Poll  string
@@ -29,6 +30,7 @@ type CFBDGame struct {
 	SeasonType string    `json:"season_type"`
 	Week       int       `json:"week"`
 	StartDate  time.Time `json:"start_date"`
+	Venue      string    `json:"venue"`
 
 	//seasonType     string
 	//startDate      string
@@ -74,6 +76,13 @@ func (game CFBDGame) Result() string {
 		return "Bye Week"
 	}
 }
+
+//func (game CFBDGame) GetID() string {
+//
+//	return strconv.Itoa(game.Season) + "." +
+//		strings.ToUpper(game.SeasonType[0:1]) + "." +
+//		strconv.Itoa(game.Week)
+//}
 
 func (game CFBDGame) Winner() string {
 	if game.HomePoints > game.AwayPoints {
