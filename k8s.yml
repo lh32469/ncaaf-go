@@ -23,9 +23,9 @@ spec:
           image: localhost:32000/${project}:${branch}
           imagePullPolicy: "Always"
           resources:
-            limits:
-              memory: "1Gi"
-              cpu: "500m"
+            requests:
+              memory: "25mi"
+              cpu: "250m"
 
 ---
 
