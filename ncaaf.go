@@ -192,7 +192,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			return team.Name + "\n" +
+			return team.Name + " (" + strconv.Itoa(team.Position) + ")\n" +
 				strconv.Itoa(wins) + " - " + strconv.Itoa(losses)
 		},
 	}
@@ -248,6 +248,7 @@ func main() {
 	//router.HandleFunc("/load/{year}/{week}/{type}", loadGames)
 	router.HandleFunc("/image/{image}", getImage)
 
-	log.Printf("Running...")
-	log.Fatal(http.ListenAndServe(":10000", router))
+	port := "10000"
+	log.Printf("Running at port %s...", port)
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }

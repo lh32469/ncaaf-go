@@ -67,22 +67,15 @@ type CFBDGame struct {
 func (game CFBDGame) Result() string {
 
 	if game.ID != -1 {
-		return game.HomeTeam + " " +
-			strconv.Itoa(game.HomePoints) + "\n" +
-			game.AwayTeam + " " +
-			strconv.Itoa(game.AwayPoints) + "\n" +
+		return game.AwayTeam + " (" +
+			strconv.Itoa(game.AwayPoints) + ") @ " +
+			game.HomeTeam + " (" +
+			strconv.Itoa(game.HomePoints) + ")\n" +
 			game.StartDate.Format("01-02-2006")
 	} else {
 		return "Bye Week"
 	}
 }
-
-//func (game CFBDGame) GetID() string {
-//
-//	return strconv.Itoa(game.Season) + "." +
-//		strings.ToUpper(game.SeasonType[0:1]) + "." +
-//		strconv.Itoa(game.Week)
-//}
 
 func (game CFBDGame) Winner() string {
 	if game.HomePoints > game.AwayPoints {

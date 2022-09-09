@@ -62,6 +62,7 @@
                            y={{ .Cy }}
                            width="70"
                            height="70"
+                           onclick="alert({{ getRecord . $number }})"
                            xlink:href={{ .Image }}>
                         <title role="tooltip">{{ getRecord . $number}}</title>
                     </image>
