@@ -64,11 +64,13 @@ type CFBDGame struct {
 	//notes           string
 }
 
-var loc, _ = time.LoadLocation("America/Los_Angeles")
-
 func (game CFBDGame) Result() string {
 
 	if game.ID != -1 {
+		var loc, err = time.LoadLocation("America/Los_Angeles")
+		if err != nil {
+			panic(err)
+		}
 		return game.AwayTeam + " (" +
 			strconv.Itoa(game.AwayPoints) + ") @ " +
 			game.HomeTeam + " (" +
