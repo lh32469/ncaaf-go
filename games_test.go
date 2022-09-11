@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 )
 
 func TestGetOpponent(t *testing.T) {
@@ -214,30 +215,28 @@ func TestWinner(t *testing.T) {
 
 }
 
-func TestGetMichiganGame2021(t *testing.T) {
+func TestStartDateParsing(t *testing.T) {
 
 	log.Printf("Running...")
 	var session = openSession()
 	defer session.Close()
 
-	games := getGames(2021)
+	games := getGames(2022)
 
 	michigan := Team{
 		Name: "Michigan",
 	}
 
-	game := getGameBy(michigan, 1, "regular", games)
+	game := getGame(michigan, 2, games)
 
-	if "Western Michigan" != game.AwayTeam {
+	if "Hawai'i" != game.AwayTeam {
 		t.Logf("Opponent: %s\n", game)
 		t.Fatalf(`Couldn't find Opponent for %s'`, michigan)
 	}
 
-	game = getGameBy(michigan, 1, "postseason", games)
+	t.Logf("Start Date: %s", game.StartDate)
 
-	if "Georgia" != game.AwayTeam {
-		t.Logf("Opponent: %s\n", game)
-		t.Fatalf(`Couldn't find Opponent for %s'`, michigan)
-	}
+	loc, _ := time.LoadLocation("America/Los_Angeles")
+	t.Logf("Start Date: %s", game.StartDate.In(loc))
 
 }

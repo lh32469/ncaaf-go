@@ -64,6 +64,8 @@ type CFBDGame struct {
 	//notes           string
 }
 
+var loc, _ = time.LoadLocation("America/Los_Angeles")
+
 func (game CFBDGame) Result() string {
 
 	if game.ID != -1 {
@@ -71,7 +73,7 @@ func (game CFBDGame) Result() string {
 			strconv.Itoa(game.AwayPoints) + ") @ " +
 			game.HomeTeam + " (" +
 			strconv.Itoa(game.HomePoints) + ")\n" +
-			game.StartDate.Format("01-02-2006")
+			game.StartDate.In(loc).Format("01-02-2006")
 	} else {
 		return "Bye Week"
 	}
