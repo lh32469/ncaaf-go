@@ -7,7 +7,7 @@ import (
 var store, _ = getDocumentStore("NCAAF")
 
 func getDocumentStore(databaseName string) (*ravendb.DocumentStore, error) {
-	serverNodes := []string{"http://dell-4290.local:5050"}
+	serverNodes := []string{"http://dell-4290:5050"}
 	store := ravendb.NewDocumentStore(serverNodes, databaseName)
 	if err := store.Initialize(); err != nil {
 		return nil, err
