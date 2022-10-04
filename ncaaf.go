@@ -244,6 +244,7 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/ap/{year}", getAPSeason)
+	router.HandleFunc("/AP/{year}", getAPSeason)
 	//router.HandleFunc("/rankings/{year}/{week}/{type}", getRankings)
 	//router.HandleFunc("/load/{year}/{week}/{type}", loadGames)
 	router.HandleFunc("/image/{image}", getImage)
