@@ -1,7 +1,7 @@
 def registry = "registry.container-registry:5000"
 def dockerHost = "tcp://dind.container-registry:2375"
 
-project = ""
+project = "ncaaf"
 branch = ""
 image = ""
 k8sYml = ""
@@ -31,17 +31,7 @@ pipeline {
       steps {
         container('golang') {
           script {
-            origin = sh(
-                returnStdout: true,
-                script: "git remote get-url origin"
-            )
-            project = origin.trim()
-                .toLowerCase()
-                .split("/")
-                .last()
-                .replaceAll(".git", "")
             branch = env.BRANCH_NAME.toLowerCase()
-            println "Origin = " + origin
             println "Project/Branch = " + project + "/" + branch
             image = "${registry}/${project}-${branch}:$BUILD_NUMBER"
             println "Image = " + image
