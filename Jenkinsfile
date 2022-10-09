@@ -61,6 +61,24 @@ pipeline {
             println "k8sYml template created"
           }
 
+
+          script {
+            // Need separate script because of SimpleTemplateEngine
+            // NotSerializableException
+            def secretsFile = readFile "secrets.yml"
+
+            withCredentials([string(credentialsId: 'CFDB_TOKEN', variable: 'CFDB_TOKEN')]) {
+
+              def binding = [
+                  secret: CFDB_TOKEN
+              ]
+
+              def engine = new groovy.text.SimpleTemplateEngine()
+              def template = engine.createTemplate(secretsFile).make(binding)
+              secretsYml = template.toString()
+            }
+          }
+
         }
       }
     }
@@ -109,6 +127,9 @@ pipeline {
             } else {
               sh "kubectl create namespace $namespace"
             }
+
+            writeFile file: 'secrets-out.yml', text: secretsYml
+            sh "kubectl -n ${namespace} create -f secrets-out.yml"
 
             writeFile file: 'k8s-out.yml', text: k8sYml
             sh "kubectl -n ${namespace} apply -f k8s-out.yml"
