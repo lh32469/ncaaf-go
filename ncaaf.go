@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"github.com/go-co-op/gocron"
 	"github.com/gorilla/mux"
 	"html/template"
 	"io/fs"
@@ -11,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (p *Team) GetRecord(teamName string, weekNum int) string {
@@ -248,6 +250,19 @@ func main() {
 	//router.HandleFunc("/rankings/{year}/{week}/{type}", getRankings)
 	//router.HandleFunc("/load/{year}/{week}/{type}", loadGames)
 	router.HandleFunc("/image/{image}", getImage)
+
+	s := gocron.NewScheduler(time.UTC)
+
+	s.Cron("0 */2 * * 0,1").Do(func() {
+		token := os.Getenv("CFDB_TOKEN")
+		var time = time.Now()
+		var year, week = time.ISOWeek()
+		week = week - 33
+		log.Printf("Loading Rankings for Week %d/%d\n", year, week)
+		getRankingsForWeek(year, week, token)
+	})
+
+	s.StartAsync()
 
 	port := "10000"
 	log.Printf("Running at port %s...", port)
