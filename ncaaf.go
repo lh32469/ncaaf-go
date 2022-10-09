@@ -253,12 +253,12 @@ func main() {
 
 	s := gocron.NewScheduler(time.UTC)
 
-	s.Cron("0 */2 * * 0,1").Do(func() {
+	s.Cron("0 */2 * 8,9,10,11,12 SUN,MON").Do(func() {
 		token := os.Getenv("CFDB_TOKEN")
 		var time = time.Now()
 		var year, week = time.ISOWeek()
 		week = week - 33
-		log.Printf("Loading Rankings for Week %d/%d\n", year, week)
+		log.Printf("Loading CFB Data for Week %d/%d\n", year, week)
 		getRankingsForWeek(year, week, token)
 		loadGamesForWeek(year, week, token)
 	})
