@@ -24,7 +24,7 @@ func loadAllGames(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func loadGames(w http.ResponseWriter, r *http.Request) {
+func loadGames(w http.ResponseWriter, r *http.Request, token string) {
 
 	base := "https://api.collegefootballdata.com/games?year=YEAR&week=WEEK&seasonType=TYPE"
 	vars := mux.Vars(r)
@@ -85,7 +85,7 @@ func loadGames(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("%s", games)))
 }
 
-func getRankings(w http.ResponseWriter, r *http.Request) {
+func getRankings(w http.ResponseWriter, r *http.Request, token string) {
 
 	base := "https://api.collegefootballdata.com/rankings?year=YEAR&week=WEEK&seasonType=TYPE"
 	vars := mux.Vars(r)
