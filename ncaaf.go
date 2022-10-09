@@ -260,6 +260,7 @@ func main() {
 		week = week - 33
 		log.Printf("Loading Rankings for Week %d/%d\n", year, week)
 		getRankingsForWeek(year, week, token)
+		loadGamesForWeek(year, week, token)
 	})
 
 	s.StartAsync()
