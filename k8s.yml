@@ -22,6 +22,12 @@ spec:
         - name: ${project}
           image: localhost:32000/${project}:${branch}
           imagePullPolicy: "Always"
+          env:
+            - name: CFDB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cfdb-secret
+                  key: password
           resources:
             requests:
               memory: "25Mi"
