@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -25,7 +26,9 @@ func loadAllGames(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func loadGames(w http.ResponseWriter, r *http.Request, token string) {
+func loadGames(w http.ResponseWriter, r *http.Request) {
+
+	token := os.Getenv("CFDB_TOKEN")
 
 	base := "https://api.collegefootballdata.com/games?year=YEAR&week=WEEK&seasonType=TYPE"
 	vars := mux.Vars(r)
@@ -86,7 +89,9 @@ func loadGames(w http.ResponseWriter, r *http.Request, token string) {
 	w.Write([]byte(fmt.Sprintf("%s", games)))
 }
 
-func getRankings(w http.ResponseWriter, r *http.Request, token string) {
+func getRankings(w http.ResponseWriter, r *http.Request) {
+
+	token := os.Getenv("CFDB_TOKEN")
 
 	base := "https://api.collegefootballdata.com/rankings?year=YEAR&week=WEEK&seasonType=TYPE"
 	vars := mux.Vars(r)
@@ -190,13 +195,11 @@ func loadGamesForWeek(season int, week int, token string) {
 	var session = openSession()
 	defer session.Close()
 
-	for i, game := range games {
-		fmt.Printf("Storing Game: %d\n", game.Week)
+	for i, _ := range games {
 		err = session.StoreWithID(&games[i], strconv.Itoa(games[i].ID))
 		if err != nil {
 			panic(err)
 		}
-
 	}
 
 	err = session.SaveChanges()
