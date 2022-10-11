@@ -55,6 +55,7 @@ pipeline {
                 project: project,
                 branch : branch,
                 image  : image,
+                domain : domain,
                 host   : host
             ]
 
