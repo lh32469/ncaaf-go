@@ -36,6 +36,9 @@ pipeline {
             image = "${registry}/${project}-${branch}:$BUILD_NUMBER"
             println "Image = " + image
 
+            domain = env.DNS_DOMAIN.toLowerCase()
+            println "Domain = " + domain
+
             def k8sFile = readFile "k8s.yml"
             println "Read file k8s.yml"
 
