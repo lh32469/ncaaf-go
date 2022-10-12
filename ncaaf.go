@@ -24,6 +24,13 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	year := vars["year"]
+
+	if len(year) == 0 {
+		var now = time.Now()
+		var yr, _ = now.ISOWeek()
+		year = strconv.Itoa(yr)
+	}
+
 	log.Print("Year: ", year)
 
 	var session = openSession()
@@ -245,6 +252,8 @@ func getImage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
+	router.HandleFunc("/", getAPSeason)
+
 	router.HandleFunc("/ap/{year}", getAPSeason)
 	router.HandleFunc("/AP/{year}", getAPSeason)
 	//router.HandleFunc("/rankings/{year}/{week}/{type}", getRankings)
@@ -255,8 +264,8 @@ func main() {
 
 	s.Cron("0 */2 * 8,9,10,11,12 SUN,MON").Do(func() {
 		token := os.Getenv("CFDB_TOKEN")
-		var time = time.Now()
-		var year, week = time.ISOWeek()
+		var now = time.Now()
+		var year, week = now.ISOWeek()
 		week = week - 34
 		log.Printf("Loading CFB Data for Week %d/%d\n", year, week)
 		getRankingsForWeek(year, week, token)
