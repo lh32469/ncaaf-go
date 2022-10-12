@@ -25,12 +25,6 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	year := vars["year"]
 
-	if len(year) == 0 {
-		var now = time.Now()
-		var yr, _ = now.ISOWeek()
-		year = strconv.Itoa(yr)
-	}
-
 	log.Print("Year: ", year)
 
 	var session = openSession()
@@ -252,24 +246,34 @@ func getImage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/", getAPSeason)
+	var year, week = time.Now().ISOWeek()
+
+	router.HandleFunc("/",
+		func(writer http.ResponseWriter, request *http.Request) {
+			http.Redirect(writer, request, "/ap/"+strconv.Itoa(year), http.StatusPermanentRedirect)
+		},
+	)
 
 	router.HandleFunc("/ap/{year}", getAPSeason)
 	router.HandleFunc("/AP/{year}", getAPSeason)
-	//router.HandleFunc("/rankings/{year}/{week}/{type}", getRankings)
-	//router.HandleFunc("/load/{year}/{week}/{type}", loadGames)
+	router.HandleFunc("/rankings/{year}/{week}/{type}", getRankings)
+	router.HandleFunc("/load/{year}/{week}/{type}", loadGames)
 	router.HandleFunc("/image/{image}", getImage)
 
 	s := gocron.NewScheduler(time.UTC)
 
 	s.Cron("0 */2 * 8,9,10,11,12 SUN,MON").Do(func() {
 		token := os.Getenv("CFDB_TOKEN")
-		var now = time.Now()
-		var year, week = now.ISOWeek()
+		//var now = time.Now()
+		//var year, week = now.ISOWeek()
 		week = week - 34
 		log.Printf("Loading CFB Data for Week %d/%d\n", year, week)
 		getRankingsForWeek(year, week, token)
 		loadGamesForWeek(year, week, token)
+	})
+
+	s.Cron("0 6,9,12,15,18 * 8,9,10,11,12 SUN,MON").Do(func() {
+		log.Println("Heartbeat")
 	})
 
 	s.StartAsync()
