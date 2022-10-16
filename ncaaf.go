@@ -249,10 +249,9 @@ func main() {
 	var year, week = time.Now().ISOWeek()
 
 	token := os.Getenv("CFDB_TOKEN")
-	week = week - 33
 
-	getRankingsForWeek(year, week, token)
-	loadGamesForWeek(year, week, token)
+	getRankingsForWeek(year, week-33, token)
+	loadGamesForWeek(year, week-34, token)
 
 	router.HandleFunc("/",
 		func(writer http.ResponseWriter, request *http.Request) {
@@ -272,10 +271,9 @@ func main() {
 		token := os.Getenv("CFDB_TOKEN")
 		var now = time.Now()
 		var year, week = now.ISOWeek()
-		week = week - 33
 		log.Printf("Loading CFB Data for Week %d/%d\n", year, week)
-		getRankingsForWeek(year, week, token)
-		loadGamesForWeek(year, week, token)
+		getRankingsForWeek(year, week-33, token)
+		loadGamesForWeek(year, week-44, token)
 	})
 
 	s.Cron("0 6,9,12,15,18 * 8,9,10,11,12 SUN,MON").Do(func() {
