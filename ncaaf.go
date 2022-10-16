@@ -246,7 +246,10 @@ func getImage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
-	var year, _ = time.Now().ISOWeek()
+	var year, week = time.Now().ISOWeek()
+
+	getRankingsForWeek(year, week, token)
+	loadGamesForWeek(year, week, token)
 
 	router.HandleFunc("/",
 		func(writer http.ResponseWriter, request *http.Request) {
