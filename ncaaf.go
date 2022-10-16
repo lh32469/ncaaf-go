@@ -248,6 +248,9 @@ func main() {
 
 	var year, week = time.Now().ISOWeek()
 
+	token := os.Getenv("CFDB_TOKEN")
+	week = week - 33
+
 	getRankingsForWeek(year, week, token)
 	loadGamesForWeek(year, week, token)
 
@@ -269,7 +272,7 @@ func main() {
 		token := os.Getenv("CFDB_TOKEN")
 		var now = time.Now()
 		var year, week = now.ISOWeek()
-		week = week - 34
+		week = week - 33
 		log.Printf("Loading CFB Data for Week %d/%d\n", year, week)
 		getRankingsForWeek(year, week, token)
 		loadGamesForWeek(year, week, token)
