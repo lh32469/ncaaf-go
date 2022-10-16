@@ -246,7 +246,7 @@ func getImage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
-	var year, week = time.Now().ISOWeek()
+	var year, _ = time.Now().ISOWeek()
 
 	router.HandleFunc("/",
 		func(writer http.ResponseWriter, request *http.Request) {
@@ -264,8 +264,8 @@ func main() {
 
 	s.Cron("0 */2 * 8,9,10,11,12 SUN,MON").Do(func() {
 		token := os.Getenv("CFDB_TOKEN")
-		//var now = time.Now()
-		//var year, week = now.ISOWeek()
+		var now = time.Now()
+		var year, week = now.ISOWeek()
 		week = week - 34
 		log.Printf("Loading CFB Data for Week %d/%d\n", year, week)
 		getRankingsForWeek(year, week, token)
