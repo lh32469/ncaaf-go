@@ -251,6 +251,7 @@ func main() {
 	token := os.Getenv("CFDB_TOKEN")
 
 	getRankingsForWeek(year, week-33, token)
+	loadGamesForWeek(year, week-33, token)
 	loadGamesForWeek(year, week-34, token)
 
 	router.HandleFunc("/",
@@ -272,6 +273,7 @@ func main() {
 		var now = time.Now()
 		var year, week = now.ISOWeek()
 		getRankingsForWeek(year, week-33, token)
+		loadGamesForWeek(year, week-33, token)
 		loadGamesForWeek(year, week-34, token)
 	})
 
