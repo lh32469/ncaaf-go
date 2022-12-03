@@ -222,10 +222,8 @@ func getTeam(name string, teams []*Team) (*Team, error) {
 		if team.Name == name {
 			return team, nil
 		}
-		for _, alias := range team.Names {
-			if alias == name {
-				return team, nil
-			}
+		if contains(team.Names, name) {
+			return team, nil
 		}
 	}
 	log.Printf("getTeam: '%s' not found", name)

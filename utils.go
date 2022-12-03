@@ -266,3 +266,13 @@ func getRankingsForWeek(season int, week int, token string) {
 	}
 
 }
+
+// contains checks if a string is present in a slice
+func contains(slice []string, target string) bool {
+	for _, element := range slice {
+		if element == target {
+			return true
+		}
+	}
+	return false
+}

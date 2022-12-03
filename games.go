@@ -177,16 +177,17 @@ func getGame2(team Team, week int, games []*CFBDGame) Game {
 
 	for _, cfbdGame := range games {
 		if cfbdGame.Week == week {
-			if cfbdGame.AwayTeam == team.Name {
+			if contains(team.Names, cfbdGame.AwayTeam) {
 				game = cfbdGame
 				break
 			}
-			if cfbdGame.HomeTeam == team.Name {
+			if contains(team.Names, cfbdGame.HomeTeam) {
 				game = cfbdGame
 				break
 			}
 		}
 	}
+
 	home := Side{
 		Score: strconv.Itoa(game.HomePoints),
 		Names: map[string]string{
