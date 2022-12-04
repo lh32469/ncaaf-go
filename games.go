@@ -157,10 +157,10 @@ func getGames(season int) []*CFBDGame {
 func getGame(team Team, week int, games []*CFBDGame) CFBDGame {
 	for _, cfbdGame := range games {
 		if cfbdGame.Week == week {
-			if cfbdGame.AwayTeam == team.Name {
+			if contains(team.Names, cfbdGame.AwayTeam) {
 				return *cfbdGame
 			}
-			if cfbdGame.HomeTeam == team.Name {
+			if contains(team.Names, cfbdGame.HomeTeam) {
 				return *cfbdGame
 			}
 		}
