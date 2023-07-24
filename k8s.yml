@@ -31,7 +31,7 @@ spec:
           resources:
             requests:
               memory: "25Mi"
-              cpu: "250m"
+              cpu: "10m"
 
 ---
 
@@ -86,4 +86,4 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: ${project}
-  targetCPUUtilizationPercentage: 10
+  targetCPUUtilizationPercentage: 200
