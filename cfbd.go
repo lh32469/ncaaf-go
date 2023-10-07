@@ -75,7 +75,8 @@ func (game CFBDGame) Result() string {
 			strconv.Itoa(game.AwayPoints) + ") @ " +
 			game.HomeTeam + " (" +
 			strconv.Itoa(game.HomePoints) + ")\n" +
-			game.StartDate.In(loc).Format("01-02-2006")
+			game.StartDate.In(loc).Format("01-02; 15:04 MST") + "\n" +
+			game.Venue
 	} else {
 		return "Bye Week"
 	}
