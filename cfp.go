@@ -1,26 +1,15 @@
 package main
 
 import (
-	"errors"
-	"github.com/go-co-op/gocron"
 	"github.com/gorilla/mux"
 	"html/template"
-	"io/fs"
 	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strconv"
-	"strings"
-	"time"
 )
 
-func (p *Team) GetRecord(teamName string, weekNum int) string {
-	return "This is record for " + teamName + ", Week: " +
-		strconv.Itoa(weekNum)
-}
-
-func getAPSeason(w http.ResponseWriter, r *http.Request) {
+func getCFPseason(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	year := vars["year"]
@@ -30,10 +19,10 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	var session = openSession()
 	defer session.Close()
 
-	// Load Regular Season Rankings
+	// Load College Football Playoff Rankings
 	q := session.QueryCollection("CFBDWeeks")
 	q = q.WhereEquals("season", year)
-	q = q.WhereEquals("polls.Poll", "AP Top 25")
+	q = q.WhereEquals("polls.Poll", "Playoff Committee Rankings")
 
 	var weeks []*CFBDWeek
 	err := q.GetResults(&weeks)
@@ -67,13 +56,16 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 
 	var xPosition = 0
 
+	var weekPoll CFBDPoll
+
 	for _, cfbdPoll := range weeks {
 		xPosition += 250
 
-		var weekPoll CFBDPoll
+		//log.Printf("Week %d\n", strconv.Itoa(cfbdPoll.Week))
 
 		for _, poll := range cfbdPoll.Polls {
-			if poll.Poll == "AP Top 25" {
+			log.Printf("Poll: %s\n", poll.Poll)
+			if poll.Poll == "Playoff Committee Rankings" {
 				weekPoll = poll
 			}
 		}
@@ -116,7 +108,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 
 	// Files are provided as a slice of strings.
 	paths := []string{
-		"AP-Season.tmpl",
+		"CFP-Season.tmpl",
 	}
 
 	funcMap := template.FuncMap{
@@ -174,10 +166,10 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	season.Title = "NCAAF AP " + year
+	season.Title = "NCAAF CFP " + year
 
 	t := template.
-		Must(template.New("AP-Season.tmpl").
+		Must(template.New("CFP-Season.tmpl").
 			Funcs(funcMap).
 			ParseFiles(paths...))
 
@@ -186,78 +178,4 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-}
-
-func getTeam(name string, teams []*Team) (*Team, error) {
-
-	name = strings.TrimSpace(name)
-
-	for _, team := range teams {
-		if team.Name == name {
-			return team, nil
-		}
-		if contains(team.Names, name) {
-			return team, nil
-		}
-	}
-	log.Printf("getTeam: '%s' not found", name)
-	var err = errors.New("'" + name + "' not found")
-	return nil, err
-}
-
-func getImage(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	image := vars["image"]
-	//log.Print("image: ", image)
-	data, _ := fs.ReadFile(os.DirFS("images"), image)
-
-	w.Write(data)
-}
-
-func main() {
-	router := mux.NewRouter().StrictSlash(true)
-
-	var year, week = time.Now().ISOWeek()
-
-	token := os.Getenv("CFDB_TOKEN")
-
-	getRankingsForWeek(year, week-33, token)
-	loadGamesForWeek(year, week-33, token)
-	loadGamesForWeek(year, week-34, token)
-
-	router.HandleFunc("/",
-		func(writer http.ResponseWriter, request *http.Request) {
-			http.Redirect(writer, request, "/ap/"+strconv.Itoa(year), http.StatusPermanentRedirect)
-		},
-	)
-
-	router.HandleFunc("/ap/{year}", getAPSeason)
-	router.HandleFunc("/AP/{year}", getAPSeason)
-	router.HandleFunc("/cfp/{year}", getCFPseason)
-	router.HandleFunc("/CFP/{year}", getCFPseason)
-	router.HandleFunc("/rankings/{year}/{week}/{type}", getRankings)
-	router.HandleFunc("/load/{year}/{week}/{type}", loadGames)
-	router.HandleFunc("/image/{image}", getImage)
-
-	s := gocron.NewScheduler(time.UTC)
-
-	s.Cron("0 */2 * 8,9,10,11,12 SUN,MON,TUE").Do(func() {
-		token := os.Getenv("CFDB_TOKEN")
-		var now = time.Now()
-		var year, week = now.ISOWeek()
-		getRankingsForWeek(year, week-33, token)
-		loadGamesForWeek(year, week-33, token)
-		loadGamesForWeek(year, week-34, token)
-	})
-
-	s.Cron("0 6,9,12,15,18 * 8,9,10,11,12 SUN,MON,TUE").Do(func() {
-		log.Println("Heartbeat")
-	})
-
-	s.StartAsync()
-
-	port := "10000"
-	log.Printf("Running at port %s...", port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
 }
