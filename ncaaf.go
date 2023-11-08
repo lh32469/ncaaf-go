@@ -215,6 +215,15 @@ func getImage(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+func checkPolls() {
+	token := os.Getenv("CFDB_TOKEN")
+	var now = time.Now()
+	var year, week = now.ISOWeek()
+	getRankingsForWeek(year, week-33, token)
+	loadGamesForWeek(year, week-33, token)
+	loadGamesForWeek(year, week-34, token)
+}
+
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -242,20 +251,17 @@ func main() {
 
 	s := gocron.NewScheduler(time.UTC)
 
-	s.Cron("0 */2 * 8,9,10,11,12 SUN,MON,TUE").Do(func() {
-		token := os.Getenv("CFDB_TOKEN")
-		var now = time.Now()
-		var year, week = now.ISOWeek()
-		getRankingsForWeek(year, week-33, token)
-		loadGamesForWeek(year, week-33, token)
-		loadGamesForWeek(year, week-34, token)
+	s.Cron("0 */2 * 8,9,10,11,12 SUN,MON,TUE,WED").Do(func() {
+		checkPolls()
 	})
 
-	s.Cron("0 6,9,12,15,18 * 8,9,10,11,12 SUN,MON,TUE").Do(func() {
+	s.Cron("0 6,9,12,15,18 * 8,9,10,11,12 SUN,MON,TUE,WED").Do(func() {
 		log.Println("Heartbeat")
 	})
 
 	s.StartAsync()
+
+	checkPolls()
 
 	port := "10000"
 	log.Printf("Running at port %s...", port)
