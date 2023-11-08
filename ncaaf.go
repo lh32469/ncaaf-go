@@ -220,6 +220,7 @@ func checkPolls() {
 	var now = time.Now()
 	var year, week = now.ISOWeek()
 	getRankingsForWeek(year, week-33, token)
+	getRankingsForWeek(year, week-34, token)
 	loadGamesForWeek(year, week-33, token)
 	loadGamesForWeek(year, week-34, token)
 }
