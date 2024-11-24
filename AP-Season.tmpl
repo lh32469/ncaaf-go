@@ -29,6 +29,8 @@
 
 <svg width="4500" height="2050">
 
+    {{$year := .Year}}
+
     {{ with .Paths }}
         {{ range . }}
             <path d={{ .D }} stroke={{ .Stroke }} stroke-width={{ .StrokeWidth }} fill="none"/>
@@ -37,25 +39,36 @@
 
     {{ with .Weeks }}
         {{ range . }}
+
+            {{ if le $year 2023}}
+                {{ if eq .Number 14}}
+                    <text x={{ offset .XPosition -45 }} y="25" fill="black">
+                        Conf Championships {{$year}}
+                    </text>
+                {{ else if eq .Number 15}}
+                    <text x={{ offset .XPosition -45 }} y="25" fill="black">
+                        Bowl Games {{$year}} {{.Number}}
+                    </text>
+                {{else }}
+                    <text x={{ .XPosition }} y="25" fill="black">
+                        Week {{ .Number  }}
+                    </text>
+                {{ end }}
+            {{ end }}
+            {{ if ge $year 2024}}
+                {{ if eq .Number 15}}
+                    <text x={{ offset .XPosition -45 }} y="25" fill="black">
+                        Conf Championships {{$year}}
+                    </text>
+                {{else }}
+                    <text x={{ .XPosition }} y="25" fill="black">
+                        Week {{ .Number  }}
+                    </text>
+                {{ end }}
+            {{ end }}
+
             {{$number := .Number}}
             {{$teams := .Teams}}
-            {{ if eq .Number 14 }}
-                <text x={{ offset .XPosition -45 }} y="25" fill="black">
-                    Conf Championships
-                </text>
-            {{else if eq .Number 15}}
-                <text x={{ offset .XPosition -15 }} y="25" fill="black">
-                    Bowl Games
-                </text>
-            {{else if eq .Number 16}}
-                <text x={{ offset .XPosition -15 }} y="25" fill="black">
-                    Final Results
-                </text>
-            {{else }}
-                <text x={{ .XPosition }} y="25" fill="black">
-                    Week {{ .Number  }}
-                </text>
-            {{ end }}
             {{ with .Teams }}
                 {{ range . }}
                     <image x={{ .Cx }}
