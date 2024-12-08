@@ -61,7 +61,7 @@ type CFBDGame struct {
 	//awayPostgameElo int
 	//excitementIndex int
 	//highlights      string
-	//notes           string
+	Notes string `json:"notes"`
 }
 
 func (game CFBDGame) Result() string {
@@ -76,7 +76,8 @@ func (game CFBDGame) Result() string {
 			game.HomeTeam + " (" +
 			strconv.Itoa(game.HomePoints) + ")\n" +
 			game.StartDate.In(loc).Format("01-02; 15:04 MST") + "\n" +
-			game.Venue
+			game.Venue + "\n" +
+			game.Notes
 	} else {
 		return "Bye Week"
 	}
