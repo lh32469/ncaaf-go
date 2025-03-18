@@ -16,4 +16,4 @@ Viewable at:
    https://ncaaf.gpc4j.org/ap/2021
    ...
    
-Still a work in progress so post season games are a bit off
+Still a work in progress so post season games are a bit off.
