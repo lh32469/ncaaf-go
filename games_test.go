@@ -112,26 +112,6 @@ func TestGetOpponentOhioState(t *testing.T) {
 
 }
 
-func TestGetScoreBoard(t *testing.T) {
-
-	log.Printf("Running...")
-
-	scoreBoard := getScoreBoard(2021, 1)
-	//fmt.Printf("scoreBoard: %s\n", scoreBoard)
-	fmt.Printf("Game[0]: %s\n", scoreBoard.Games[0])
-
-}
-
-func TestGetScoreBoards(t *testing.T) {
-
-	log.Printf("Running...")
-
-	scoreBoards := getScoreBoards(2020)
-	fmt.Printf("scoreBoard: %s\n", scoreBoards)
-	//fmt.Printf("Game[0]: %s\n", scoreBoard.Games[0])
-
-}
-
 func TestGetGame(t *testing.T) {
 
 	log.Printf("Running...")

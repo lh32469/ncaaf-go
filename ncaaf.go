@@ -2,8 +2,6 @@ package main
 
 import (
 	"errors"
-	"github.com/go-co-op/gocron"
-	"github.com/gorilla/mux"
 	"html/template"
 	"io/fs"
 	"log"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-co-op/gocron"
+	"github.com/gorilla/mux"
 )
 
 func (p *Team) GetRecord(teamName string, weekNum int) string {
@@ -154,15 +155,15 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 				if game.Week > week-1 {
 					continue
 				}
-				if game.AwayTeam == team.Name {
-					if game.AwayPoints > game.HomePoints {
+				if game.AwayTeam() == team.Name {
+					if game.AwayPoints() > game.HomePoints() {
 						wins++
 					} else {
 						losses++
 					}
 				}
-				if game.HomeTeam == team.Name {
-					if game.HomePoints > game.AwayPoints {
+				if game.HomeTeam() == team.Name {
+					if game.HomePoints() > game.AwayPoints() {
 						wins++
 					} else {
 						losses++
@@ -228,17 +229,15 @@ func checkPolls() {
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
-	var year, week = time.Now().ISOWeek()
-
-	token := os.Getenv("CFDB_TOKEN")
-
-	getRankingsForWeek(year, week-33, token)
-	loadGamesForWeek(year, week-33, token)
-	loadGamesForWeek(year, week-34, token)
+	var year, _ = time.Now().ISOWeek()
 
 	router.HandleFunc("/",
 		func(writer http.ResponseWriter, request *http.Request) {
-			http.Redirect(writer, request, "/ap/"+strconv.Itoa(year), http.StatusPermanentRedirect)
+			http.Redirect(
+				writer,
+				request,
+				"/ap/"+strconv.Itoa(year),
+				http.StatusPermanentRedirect)
 		},
 	)
 
@@ -261,8 +260,6 @@ func main() {
 	})
 
 	s.StartAsync()
-
-	checkPolls()
 
 	port := "10000"
 	log.Printf("Running at port %s...", port)

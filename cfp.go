@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
 	"html/template"
 	"log"
 	"net/http"
 	"sort"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 func getCFPseason(w http.ResponseWriter, r *http.Request) {
@@ -146,15 +147,15 @@ func getCFPseason(w http.ResponseWriter, r *http.Request) {
 				if game.Week > week-1 {
 					continue
 				}
-				if game.AwayTeam == team.Name {
-					if game.AwayPoints > game.HomePoints {
+				if game.AwayTeam() == team.Name {
+					if game.AwayPoints() > game.HomePoints() {
 						wins++
 					} else {
 						losses++
 					}
 				}
-				if game.HomeTeam == team.Name {
-					if game.HomePoints > game.AwayPoints {
+				if game.HomeTeam() == team.Name {
+					if game.HomePoints() > game.AwayPoints() {
 						wins++
 					} else {
 						losses++

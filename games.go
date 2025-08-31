@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"encoding/json"
 	"strconv"
 	"strings"
 )
@@ -69,20 +68,20 @@ func getCFBDGame(team Team, year int, week int) Game {
 	game := games[0]
 
 	home := Side{
-		Score: strconv.Itoa(game.HomePoints),
+		Score: strconv.Itoa(game.HomePoints()),
 		Names: map[string]string{
-			"short": game.HomeTeam,
+			"short": game.HomeTeam(),
 		},
 	}
 
 	away := Side{
-		Score: strconv.Itoa(game.AwayPoints),
+		Score: strconv.Itoa(game.AwayPoints()),
 		Names: map[string]string{
-			"short": game.AwayTeam,
+			"short": game.AwayTeam(),
 		},
 	}
 
-	if game.HomePoints > game.AwayPoints {
+	if game.HomePoints() > game.AwayPoints() {
 		home.Winner = true
 	} else {
 		away.Winner = true
@@ -93,49 +92,6 @@ func getCFBDGame(team Team, year int, week int) Game {
 		Home:   home,
 		Away:   away,
 	}
-}
-
-func getScoreBoard(year int, week int) *ScoreBoard {
-
-	session := openSession()
-	defer session.Close()
-
-	id := fmt.Sprintf("scoreboard.%d.%02d", year, week)
-
-	log.Println("getScoreBoard ID: " + id)
-
-	q := session.QueryCollection("ScoreBoards")
-	q = q.Where("ID", "==", id)
-	var scoreBoard *ScoreBoard
-	var err = q.Single(&scoreBoard)
-	if err != nil {
-		panic(err)
-	}
-
-	return scoreBoard
-}
-
-func getScoreBoards(year int) []*ScoreBoard {
-
-	session := openSession()
-	defer session.Close()
-
-	id := fmt.Sprintf("scoreboard.%d", year)
-
-	log.Println("ID: " + id)
-
-	q := session.QueryCollection("ScoreBoards")
-	q.WhereStartsWith("ID", id)
-	var scoreBoards []*ScoreBoard
-	var err = q.GetResults(&scoreBoards)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Printf("Found %d ScoreBoards for %d",
-		len(scoreBoards), year)
-
-	return scoreBoards
 }
 
 func getGames(season int) []*CFBDGame {
@@ -157,10 +113,10 @@ func getGames(season int) []*CFBDGame {
 func getGame(team Team, week int, games []*CFBDGame) CFBDGame {
 	for _, cfbdGame := range games {
 		if cfbdGame.Week == week {
-			if contains(team.Names, cfbdGame.AwayTeam) {
+			if contains(team.Names, cfbdGame.AwayTeam()) {
 				return *cfbdGame
 			}
-			if contains(team.Names, cfbdGame.HomeTeam) {
+			if contains(team.Names, cfbdGame.HomeTeam()) {
 				return *cfbdGame
 			}
 		}
@@ -177,11 +133,11 @@ func getGame2(team Team, week int, games []*CFBDGame) Game {
 
 	for _, cfbdGame := range games {
 		if cfbdGame.Week == week {
-			if contains(team.Names, cfbdGame.AwayTeam) {
+			if contains(team.Names, cfbdGame.AwayTeam()) {
 				game = cfbdGame
 				break
 			}
-			if contains(team.Names, cfbdGame.HomeTeam) {
+			if contains(team.Names, cfbdGame.HomeTeam()) {
 				game = cfbdGame
 				break
 			}
@@ -189,20 +145,20 @@ func getGame2(team Team, week int, games []*CFBDGame) Game {
 	}
 
 	home := Side{
-		Score: strconv.Itoa(game.HomePoints),
+		Score: strconv.Itoa(game.HomePoints()),
 		Names: map[string]string{
-			"short": game.HomeTeam,
+			"short": game.HomeTeam(),
 		},
 	}
 
 	away := Side{
-		Score: strconv.Itoa(game.AwayPoints),
+		Score: strconv.Itoa(game.AwayPoints()),
 		Names: map[string]string{
-			"short": game.AwayTeam,
+			"short": game.AwayTeam(),
 		},
 	}
 
-	if game.HomePoints > game.AwayPoints {
+	if game.HomePoints() > game.AwayPoints() {
 		home.Winner = true
 	} else {
 		away.Winner = true
@@ -213,4 +169,63 @@ func getGame2(team Team, week int, games []*CFBDGame) Game {
 		Home:   home,
 		Away:   away,
 	}
+}
+
+type Game struct {
+	GameID         string `json:"gameID"`
+	Title          string
+	StartTime      string
+	StartTimeEpoch string
+	Home           Side
+	Away           Side
+}
+
+type Side struct {
+	Score  string
+	Winner bool
+	Rank   string
+	Names  map[string]string
+}
+
+func (t Game) String() string {
+
+	out, err := json.MarshalIndent(t, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+
+	return string(out)
+}
+
+func (game Game) Result() string {
+
+	return game.Home.Names["short"] + " " +
+		game.Home.Score + " " +
+		game.Away.Names["short"] + " " +
+		game.Away.Score
+}
+
+func (game Game) Winner() string {
+	if game.Home.Winner {
+		return game.Home.Names["short"]
+	} else {
+		return game.Away.Names["short"]
+	}
+}
+
+func (game Game) IsWinner(team Team) bool {
+
+	winner := game.Winner()
+
+	if team.Name == winner {
+		return true
+	}
+
+	for _, alias := range team.Names {
+		if strings.TrimSpace(winner) == alias {
+			return true
+		}
+	}
+
+	return false
 }

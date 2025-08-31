@@ -56,7 +56,7 @@ func addPaths(season *Season, games []*CFBDGame) []Path {
 				}
 			}
 
-			diff := math.Abs(float64(game.HomePoints - game.AwayPoints))
+			diff := math.Abs(float64(game.HomePoints() - game.AwayPoints()))
 			m := int(math.Ceil(diff / 10))
 			if m == 0 {
 				m = 1
@@ -77,6 +77,14 @@ func addPaths(season *Season, games []*CFBDGame) []Path {
 	return paths
 }
 
+// findTeam searches for a team by name within a given week's team list
+// Parameters:
+//   - name: the name of the team to find
+//   - week: the Week structure containing the list of teams to search
+//
+// Returns:
+//   - Team: the found team if successful, empty Team struct if not found
+//   - error: nil if team is found, error with message "<team name> not found" if not found
 func findTeam(name string, week Week) (Team, error) {
 	for i := range week.Teams {
 		if week.Teams[i].Name == name {
