@@ -117,7 +117,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 
 	// Files are provided as a slice of strings.
 	paths := []string{
-		"AP-Season.tmpl",
+		"AP-Season.gohtml",
 	}
 
 	funcMap := template.FuncMap{
@@ -178,7 +178,7 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	season.Title = "NCAAF AP " + year
 
 	t := template.
-		Must(template.New("AP-Season.tmpl").
+		Must(template.New("AP-Season.gohtml").
 			Funcs(funcMap).
 			ParseFiles(paths...))
 
