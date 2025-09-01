@@ -1,113 +1,105 @@
 <html>
-
-<head>
+  <head>
     <title>{{ .Title }}</title>
-</head>
-
-<body style="background-color: #909090;">
-<script type="text/javascript">
-
-    function MakeTransparent2(evt) {
+  </head>
+  <body style="background-color: #909090;">
+    <script type="text/javascript">
+      function MakeTransparent2(evt) {
         evt.target.setAttributeNS(null, "opacity", "0.5");
-    }
-
-    function MakeOpaque2(evt) {
+      }
+      function MakeOpaque2(evt) {
         evt.target.setAttributeNS(null, "opacity", "1");
-    }
+      }
+    </script>
 
-</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NXXHS1JYY2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-NXXHS1JYY2');
+    </script>
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-NXXHS1JYY2"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    <svg width="4500" height="2050">
+      {{$year := .Year}}
 
-    gtag('config', 'G-NXXHS1JYY2');
-</script>
-
-<svg width="4500" height="2050">
-
-    {{$year := .Year}}
-
-    {{ with .Paths }}
+      {{ with .Paths }}
         {{ range . }}
-            <path d={{ .D }} stroke={{ .Stroke }} stroke-width={{ .StrokeWidth }} fill="none"/>
+          <path d={{ .D }} stroke={{ .Stroke }} stroke-width={{ .StrokeWidth }} fill="none"/>
         {{ end }}
-    {{ end }}
+      {{ end }}
 
-    {{ with .Weeks }}
+      {{ with .Weeks }}
         {{ range . }}
+          {{ if le $year 2023 }}
+            {{ if eq .Number 14 }}
+              <text x={{ offset .XPosition -45 }} y="25" fill="black">
+                Conf Championships {{$year}}
+              </text>
+            {{ else if eq .Number 15 }}
+              <text x={{ offset .XPosition -45 }} y="25" fill="black">
+                Bowl Games {{$year}} {{ .Number }}
+              </text>
+            {{ else }}
+              <text x={{ .XPosition }} y="25" fill="black">
+                Week {{ .Number }}
+              </text>
+            {{ end }}
+          {{ end }}
+          {{ if ge $year 2024 }}
+            {{ if eq .Number 15 }}
+              <text x={{ offset .XPosition -45 }} y="25" fill="black">
+                Conf Championships {{$year}}
+              </text>
+            {{ else }}
+              <text x={{ .XPosition }} y="25" fill="black">
+                Week {{ .Number }}
+              </text>
+            {{ end }}
+          {{ end }}
 
-            {{ if le $year 2023}}
-                {{ if eq .Number 14}}
-                    <text x={{ offset .XPosition -45 }} y="25" fill="black">
-                        Conf Championships {{$year}}
-                    </text>
-                {{ else if eq .Number 15}}
-                    <text x={{ offset .XPosition -45 }} y="25" fill="black">
-                        Bowl Games {{$year}} {{.Number}}
-                    </text>
-                {{else }}
-                    <text x={{ .XPosition }} y="25" fill="black">
-                        Week {{ .Number  }}
-                    </text>
+          {{$number := .Number}}
+          {{$teams := .Teams}}
+          {{ with .Teams }}
+            {{ range . }}
+              <image x={{ .Cx }}
+                     y={{ .Cy }}
+                     width="70"
+                     height="70"
+                     onclick="alert({{ getRecord . $number }})"
+                     xlink:href={{ .Image }}>
+                <title role="tooltip">{{ getRecord . $number }}</title>
+              </image>
+              {{ if lt $number 16 }}
+                {{$opp := (opponent . $number)}}
+                {{$oppRank := (getRank $opp $teams)}}
+                <image x={{ offset .Cx 100 }}
+                       y={{ offset .Cy 20 }}
+                       width="40"
+                       height="40"
+                       onclick="alert({{ getResult . $number }})"
+                       xlink:href={{ $opp.Image }}>
+                  <title role="tooltip">{{ getResult . $number }}</title>
+                </image>
+                {{ if le $oppRank 25 }}
+                  {{$stroke := "black"}}
+                  {{ if le $oppRank 10 }}
+                    {{$stroke = "red"}}
+                  {{ end }}
+                  <circle cx={{ offset .Cx 120 }}
+                          cy={{ offset .Cy 40 }}
+                          r="29"
+                          stroke={{$stroke}}
+                          fill="none"/>
                 {{ end }}
+              {{ end }}
             {{ end }}
-            {{ if ge $year 2024}}
-                {{ if eq .Number 15}}
-                    <text x={{ offset .XPosition -45 }} y="25" fill="black">
-                        Conf Championships {{$year}}
-                    </text>
-                {{else }}
-                    <text x={{ .XPosition }} y="25" fill="black">
-                        Week {{ .Number  }}
-                    </text>
-                {{ end }}
-            {{ end }}
-
-            {{$number := .Number}}
-            {{$teams := .Teams}}
-            {{ with .Teams }}
-                {{ range . }}
-                    <image x={{ .Cx }}
-                           y={{ .Cy }}
-                           width="70"
-                           height="70"
-                           onclick="alert({{ getRecord . $number }})"
-                           xlink:href={{ .Image }}>
-                        <title role="tooltip">{{ getRecord . $number}}</title>
-                    </image>
-                    {{ if lt $number 16 }}
-                        {{$opp := (opponent . $number)}}
-                        {{$oppRank := (getRank $opp $teams)}}
-                        <image x={{ offset .Cx 100 }}
-                               y={{ offset .Cy 20 }}
-                               width="40"
-                               height="40"
-                               onclick="alert({{ getResult . $number }})"
-                               xlink:href={{ $opp.Image }}>
-                            <title role="tooltip">{{ getResult . $number }}</title>
-                        </image>
-                        {{ if le $oppRank 25}}
-                            {{$stroke := "black"}}
-                            {{ if le $oppRank 10}}
-                                {{$stroke = "red"}}
-                            {{ end }}
-                            <circle cx={{ offset .Cx 120 }}
-                                    cy={{ offset .Cy 40 }}
-                                    r="29"
-                                    stroke={{$stroke}}
-                                    fill="none"/>
-                        {{ end }}
-                    {{ end }}
-                {{ end }}
-            {{ end }}
+          {{ end }}
         {{ end }}
-    {{ end }}
-</svg>
-
-</body>
-
+      {{ end }}
+    </svg>
+  </body>
 </html>

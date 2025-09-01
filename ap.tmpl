@@ -1,37 +1,30 @@
 <html>
-
-<head>
+  <head>
     <title>${title}</title>
-</head>
-
-<body>
-<script type="text/javascript">
-
-    function MakeTransparent2(evt) {
+  </head>
+  <body>
+    <script type="text/javascript">
+      function MakeTransparent2(evt) {
         evt.target.setAttributeNS(null, "opacity", "0.5");
-    }
-
-    function MakeOpaque2(evt) {
+      }
+      function MakeOpaque2(evt) {
         evt.target.setAttributeNS(null, "opacity", "1");
-    }
+      }
+    </script>
 
-</script>
-
-{{ with .Polls }}
-    {{ range . }}
+    {{ with .Polls }}
+      {{ range . }}
         {{$week := .Week}}
         {{$poll := .}}
         <h4>Week {{ $week }}</h4>
         {{ with .TeamNames }}
-            {{ range . }}
-                {{$team := $poll.GetTeam2 . $week}}
-                <h4>{{ $team.Name }}</h4>
-                <h4>{{ $team.Image }}</h4>
-            {{ end }}
+          {{ range . }}
+            {{$team := $poll.GetTeam2 . $week}}
+            <h4>{{ $team.Name }}</h4>
+            <h4>{{ $team.Image }}</h4>
+          {{ end }}
         {{ end }}
+      {{ end }}
     {{ end }}
-{{ end }}
-
-</body>
-
+  </body>
 </html>
