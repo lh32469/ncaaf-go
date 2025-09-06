@@ -6,7 +6,7 @@ ENV TZ="America/Los_Angeles"
 COPY ncaaf /usr/local/bin
 
 WORKDIR /app
-COPY *.tmpl /app
+COPY *.gohtml /app
 COPY images         /app/images
 
 CMD [ "ncaaf" ]
