@@ -43,9 +43,10 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Sort the Weeks
-	sort.Slice(weeks, func(i, j int) bool {
-		return weeks[i].Week < weeks[j].Week
-	})
+	sort.Slice(
+		weeks, func(i, j int) bool {
+			return weeks[i].Week < weeks[j].Week
+		})
 
 	// Get Teams
 	q = session.QueryCollection("Teams")
@@ -79,9 +80,10 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		sort.Slice(weekPoll.Ranks, func(i, j int) bool {
-			return weekPoll.Ranks[i].Rank < weekPoll.Ranks[j].Rank
-		})
+		sort.Slice(
+			weekPoll.Ranks, func(i, j int) bool {
+				return weekPoll.Ranks[i].Rank < weekPoll.Ranks[j].Rank
+			})
 
 		var week = Week{
 			Number:    cfbdPoll.Week,
@@ -178,9 +180,10 @@ func getAPSeason(w http.ResponseWriter, r *http.Request) {
 	season.Title = "NCAAF AP " + year
 
 	t := template.
-		Must(template.New("AP-Season.gohtml").
-			Funcs(funcMap).
-			ParseFiles(paths...))
+		Must(
+			template.New("AP-Season.gohtml").
+				Funcs(funcMap).
+				ParseFiles(paths...))
 
 	err = t.Execute(w, season)
 	if err != nil {
@@ -231,7 +234,8 @@ func main() {
 
 	var year, _ = time.Now().ISOWeek()
 
-	router.HandleFunc("/",
+	router.HandleFunc(
+		"/",
 		func(writer http.ResponseWriter, request *http.Request) {
 			http.Redirect(
 				writer,
@@ -249,17 +253,25 @@ func main() {
 	router.HandleFunc("/load/{year}/{week}/{type}", loadGames)
 	router.HandleFunc("/image/{image}", getImage)
 
-	s := gocron.NewScheduler(time.UTC)
+	scheduler := gocron.NewScheduler(time.UTC)
 
-	s.Cron("0 */2 * 8,9,10,11,12 SUN,MON,TUE,WED").Do(func() {
-		checkPolls()
-	})
+	scheduler.Cron("0 */2 * 8,9,10,11,12 SUN,MON,TUE,WED").Do(
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("checkPolls cron job panicked: %v", r)
+				}
+			}()
+			log.Println("checkPolls cron job triggered")
+			checkPolls()
+		})
 
-	s.Cron("0 6,9,12,15,18 * 8,9,10,11,12 SUN,MON,TUE,WED").Do(func() {
-		log.Println("Heartbeat")
-	})
+	scheduler.Cron("0 6,9,12,15,18 * 8,9,10,11,12 SUN,MON,TUE,WED").Do(
+		func() {
+			log.Println("Heartbeat")
+		})
 
-	s.StartAsync()
+	scheduler.StartAsync()
 
 	port := "10000"
 	log.Printf("Running at port %s...", port)
