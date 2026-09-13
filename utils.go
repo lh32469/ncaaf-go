@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 func loadAllGames(w http.ResponseWriter, r *http.Request) {
@@ -243,18 +244,24 @@ func getRankingsForWeek(season int, week int, token string) {
 	var weeks []CFBDWeek
 	err = json.Unmarshal(body, &weeks)
 
-	fmt.Println(weeks)
+	//fmt.Println(weeks)
 
 	var session = openSession()
 	defer session.Close()
 
-	for _, week := range weeks {
-		id := strconv.Itoa(week.Season) + "." +
+	for _, cfbdWeek := range weeks {
+		id := strconv.Itoa(cfbdWeek.Season) + "." +
 			"R" + "." +
-			strconv.Itoa(week.Week)
+			strconv.Itoa(cfbdWeek.Week)
 
-		err = session.StoreWithID(&week, id)
-		err = session.Store(&week)
+		log.Printf(
+			"Found rankings for season %d week %d with %d polls",
+			season,
+			week,
+			len(cfbdWeek.Polls))
+
+		err = session.StoreWithID(&cfbdWeek, id)
+		err = session.Store(&cfbdWeek)
 		if err != nil {
 			panic(err)
 		}
