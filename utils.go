@@ -183,7 +183,7 @@ func loadGamesForWeek(season int, week int, token string) {
 	var games []CFBDGame
 	err = json.Unmarshal(body, &games)
 
-	//fmt.Println(games)
+	fmt.Printf("Found: %d games for Week %d/%d\n", len(games), season, week)
 
 	//if vars["type"] == "postseason" {
 	//	for i, _ := range games {

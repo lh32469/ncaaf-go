@@ -227,6 +227,7 @@ func checkPolls() {
 	getRankingsForWeek(year, week-34, token)
 	loadGamesForWeek(year, week-33, token)
 	loadGamesForWeek(year, week-34, token)
+	loadGamesForWeek(year, week-35, token)
 }
 
 func main() {
